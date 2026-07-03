@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Colophon from '$lib/Colophon.svelte';
+	import TrendChart from '$lib/TrendChart.svelte';
 	import Masthead from '$lib/Masthead.svelte';
 	import { shortAddress, stampDate } from '$lib/format';
 	import { resolve } from '$app/paths';
@@ -27,7 +29,11 @@
 						.filter((p) => productKey(p.recommended_product as string) !== productKey(top.name))
 						.map((p) => displayModel(p.model))
 				: [];
-			return { run, top, named: named.length, dissenters };
+			const excerpt = top
+				? (named.find((p) => productKey(p.recommended_product as string) === productKey(top.name))
+						?.excerpt ?? null)
+				: null;
+			return { run, top, named: named.length, dissenters, excerpt };
 		})
 	);
 
@@ -51,6 +57,38 @@
 			return { model, cells };
 		});
 		return { runs: runs.map((r) => r.run), rows };
+	});
+
+	// Share-of-voice over time for the top products. Colors are entity-fixed
+	// by overall rank at render (validated trio for the paper surface).
+	const CHART_COLORS = ['#a8261c', '#0f6fae', '#a07414'];
+	const trend = $derived.by(() => {
+		const runsAsc = [...data.history.runs]
+			.reverse()
+			.map(({ run, picks }) => ({ run, named: picks.filter((p) => p.recommended_product) }))
+			.filter((r) => r.named.length > 0);
+		if (runsAsc.length < 2 || share.tally.length === 0) return null;
+		const top = share.tally.slice(0, CHART_COLORS.length);
+		return {
+			dates: runsAsc.map((r) => r.run.created_at),
+			series: top.map((t, i) => ({
+				name: t.name,
+				color: CHART_COLORS[i],
+				points: runsAsc.map(({ named }) => {
+					const count = named.filter(
+						(p) => productKey(p.recommended_product as string) === productKey(t.name)
+					).length;
+					return Math.round((count / named.length) * 100);
+				})
+			}))
+		};
+	});
+
+	// The matrix reads oldest -> newest; when it overflows, the newest runs
+	// (the interesting end) must be the visible ones.
+	let matrixScroll = $state<HTMLDivElement | null>(null);
+	$effect(() => {
+		if (matrix && matrixScroll) matrixScroll.scrollLeft = matrixScroll.scrollWidth;
 	});
 </script>
 
@@ -128,12 +166,21 @@
 			{/if}
 		</section>
 
+		{#if trend}
+			<hr class="rule" />
+
+			<section>
+				<h2 class="section-title">Share over time</h2>
+				<TrendChart dates={trend.dates} series={trend.series} />
+			</section>
+		{/if}
+
 		{#if matrix}
 			<hr class="rule" />
 
 			<section>
 				<h2 class="section-title">Model ledger</h2>
-				<div class="matrix-scroll">
+				<div class="matrix-scroll" bind:this={matrixScroll}>
 					<table class="matrix">
 						<thead>
 							<tr>
@@ -179,7 +226,7 @@
 				<p class="notice">No runs archived for this question yet.</p>
 			{:else}
 				<ul class="ledger">
-					{#each timeline as { run, top, named, dissenters } (run.id)}
+					{#each timeline as { run, top, named, dissenters, excerpt } (run.id)}
 						<li>
 							<a class="row-main" href={resolve('/archive/[runId]', { runId: run.id })}>
 								<span class="logged">{stampDate(run.created_at)}</span>
@@ -192,6 +239,9 @@
 									</span>
 								{/if}
 							</a>
+							{#if excerpt}
+								<span class="excerpt">&ldquo;{excerpt}&hellip;&rdquo;</span>
+							{/if}
 							{#if dissenters.length > 0}
 								<span class="dissent">dissent: {dissenters.join(', ')}</span>
 							{/if}
@@ -201,6 +251,8 @@
 			{/if}
 		</section>
 	</main>
+
+	<Colophon />
 </div>
 
 <style>
@@ -469,6 +521,17 @@
 		font-size: 0.72rem;
 		letter-spacing: 0.08em;
 		color: var(--color-mark);
+	}
+
+	.excerpt {
+		flex-basis: 100%;
+		font-family: var(--font-body);
+		font-style: italic;
+		font-size: 0.9rem;
+		color: var(--color-mark);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.dissent {

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Colophon from '$lib/Colophon.svelte';
 	import Masthead from '$lib/Masthead.svelte';
 	import { stampDate } from '$lib/format';
 	import { resolve } from '$app/paths';
@@ -63,6 +64,8 @@
 			{/if}
 		</section>
 	</main>
+
+	<Colophon />
 </div>
 
 <style>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Colophon from '$lib/Colophon.svelte';
 	import Masthead from '$lib/Masthead.svelte';
 	import { resolve } from '$app/paths';
 	import { payCommission } from '$lib/x402-client';
@@ -177,6 +178,8 @@
 			{/if}
 		</section>
 	</main>
+
+	<Colophon />
 </div>
 
 <style>

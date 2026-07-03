@@ -88,6 +88,7 @@ export type QuestionHistoryPick = {
 	sample_index: number;
 	provider: string;
 	recommended_product: string | null;
+	excerpt: string | null;
 	error: string | null;
 };
 

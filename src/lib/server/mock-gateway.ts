@@ -368,6 +368,7 @@ export function mockGateway(): LlmGateway {
 							sample_index: r.sample_index,
 							provider: r.provider,
 							recommended_product: r.recommended_product,
+							excerpt: r.response_text?.slice(0, 200) ?? null,
 							error: r.error
 						}))
 				}));

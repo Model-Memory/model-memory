@@ -1,6 +1,7 @@
 <script lang="ts">
+	import Colophon from '$lib/Colophon.svelte';
 	import Masthead from '$lib/Masthead.svelte';
-	import { stampDateTime } from '$lib/format';
+	import { stampDate, stampDateTime } from '$lib/format';
 	import { resolve } from '$app/paths';
 	import { displayModel, productKey, tallyProductCounts, tallyProducts } from '$lib/products';
 
@@ -129,6 +130,31 @@
 			{/if}
 		</section>
 
+		{#if data.shifts.length > 0}
+			<hr class="rule" />
+
+			<section class="corrections">
+				<h3>Corrections column</h3>
+				<ul class="shift-strip">
+					{#each data.shifts as shift (shift.run_id + shift.question_id)}
+						<li>
+							<span class="when">{stampDate(shift.at)}</span>
+							<span class="flip">
+								<s>{shift.from}</s> <span class="arrow">&rarr;</span> <em>{shift.to}</em>
+							</span>
+							<a
+								class="q"
+								href={resolve('/archive/q/[questionId]', { questionId: shift.question_id })}
+							>
+								&ldquo;{shift.question_text}&rdquo;
+							</a>
+						</li>
+					{/each}
+				</ul>
+				<p class="more"><a href={resolve('/shifts')}>All shifts &rarr;</a></p>
+			</section>
+		{/if}
+
 		<hr class="rule" />
 
 		<section class="insight">
@@ -197,10 +223,7 @@
 		</section>
 	</main>
 
-	<footer class="colophon">
-		<div>Model Memory &nbsp; · &nbsp; powered by Cloudflare</div>
-		<div>Volume I established MMXXVI &nbsp; · &nbsp; Will Papper</div>
-	</footer>
+	<Colophon />
 </div>
 
 <style>
@@ -352,6 +375,85 @@
 
 	.consensus a:hover {
 		text-decoration: underline;
+	}
+
+	/* —— corrections column —— */
+	.corrections h3 {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		font-weight: 500;
+		color: var(--color-mark);
+		margin: 0 0 1.25rem;
+	}
+
+	.shift-strip {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.shift-strip li {
+		display: flex;
+		align-items: baseline;
+		gap: 1rem;
+		flex-wrap: wrap;
+		padding: 0.6rem 0;
+		border-top: 1px dashed var(--color-rule);
+	}
+
+	.shift-strip li:last-child {
+		border-bottom: 1px dashed var(--color-rule);
+	}
+
+	.shift-strip .when {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		color: var(--color-mark);
+	}
+
+	.shift-strip .flip {
+		font-family: var(--font-body);
+		font-size: 1.1rem;
+	}
+
+	.shift-strip .flip s {
+		color: var(--color-mark);
+	}
+
+	.shift-strip .flip .arrow,
+	.shift-strip .flip em {
+		color: var(--color-stamp);
+	}
+
+	.shift-strip .q {
+		font-family: var(--font-body);
+		font-style: italic;
+		font-size: 0.95rem;
+		color: var(--color-mark);
+		text-decoration: none;
+	}
+
+	.shift-strip .q:hover {
+		color: var(--color-stamp);
+	}
+
+	.corrections .more {
+		margin: 1rem 0 0;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.corrections .more a {
+		color: var(--color-mark);
+		text-decoration: none;
+	}
+
+	.corrections .more a:hover {
+		color: var(--color-stamp);
 	}
 
 	/* —— insight —— */
@@ -517,22 +619,6 @@
 		margin-top: 0.75rem;
 	}
 
-	/* —— colophon —— */
-	.colophon {
-		margin-top: clamp(5rem, 10vw, 8rem);
-		padding-top: 1rem;
-		border-top: 1px solid var(--color-ink);
-		display: flex;
-		justify-content: space-between;
-		gap: 1rem;
-		flex-wrap: wrap;
-		font-family: var(--font-mono);
-		font-size: 0.68rem;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		color: var(--color-mark);
-	}
-
 	@media (max-width: 600px) {
 		.answers li {
 			flex-wrap: wrap;
@@ -542,11 +628,6 @@
 		}
 		.answers .answer {
 			margin-left: auto;
-		}
-		.colophon {
-			justify-content: flex-start;
-			flex-direction: column;
-			gap: 0.4rem;
 		}
 	}
 </style>
