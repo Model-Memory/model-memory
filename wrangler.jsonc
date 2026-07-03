@@ -13,6 +13,9 @@
 	// RPC to the llm-gateway Worker (service-binding-only, same account).
 	"services": [{ "binding": "LLM_GATEWAY", "service": "llm-gateway" }],
 	"vars": {
+		// Prototype mode: back the UI with deterministic mock data instead of
+		// the gateway. Set to "off" (or remove) when the real gateway is deployed.
+		"MOCK_GATEWAY": "on",
 		// x402 payment config for /api/commission. Leave X402_PAY_TO empty to
 		// disable paid commissioning (the endpoint returns 503).
 		"X402_PAY_TO": "",

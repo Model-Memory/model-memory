@@ -1,3 +1,5 @@
+import { mockGateway } from './mock-gateway';
+
 // Typed surface of the llm-gateway Worker's RPC entrypoint, reached via the
 // LLM_GATEWAY service binding. These shapes mirror llm-gateway/src/types.ts;
 // they are declared structurally here so this repo builds without the
@@ -158,7 +160,14 @@ export interface LlmGateway {
 
 // The generated Env types the service binding as Fetcher; the RPC methods
 // exist at runtime on the WorkerEntrypoint stub.
+//
+// While prototyping, a deterministic mock backs the whole UI: it is used
+// whenever the binding is absent (plain `vite dev`) or MOCK_GATEWAY=on
+// (wrangler preview). Set MOCK_GATEWAY=off before pointing this at the real
+// gateway in production.
 export function gateway(platform: App.Platform | undefined): LlmGateway | null {
 	const binding = platform?.env?.LLM_GATEWAY;
-	return binding ? (binding as unknown as LlmGateway) : null;
+	const mockFlag = String(platform?.env?.MOCK_GATEWAY ?? '');
+	if (mockFlag === 'on' || !binding) return mockGateway();
+	return binding as unknown as LlmGateway;
 }
