@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { gateway } from '$lib/server/gateway';
 import { productKey, tallyProducts } from '$lib/products';
+import { shareTrend } from '$lib/server/trend-data';
 
 export const load: PageServerLoad = async ({ params, platform }) => {
 	const gw = gateway(platform);
@@ -36,6 +37,7 @@ export const load: PageServerLoad = async ({ params, platform }) => {
 		name,
 		share: share.slice(0, 8).map((t) => ({ ...t, key: productKey(t.name) })),
 		total,
+		trend: shareTrend(picks),
 		questions: questions.sort((a, b) => b.at - a.at)
 	};
 };

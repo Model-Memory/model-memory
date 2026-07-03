@@ -4,7 +4,7 @@
 	import Masthead from '$lib/Masthead.svelte';
 	import { shortAddress, stampDate } from '$lib/format';
 	import { resolve } from '$app/paths';
-	import { displayModel, productKey, tallyProducts } from '$lib/products';
+	import { CHART_COLORS, displayModel, productKey, tallyProducts } from '$lib/products';
 
 	let { data } = $props();
 
@@ -61,7 +61,6 @@
 
 	// Share-of-voice over time for the top products. Colors are entity-fixed
 	// by overall rank at render (validated trio for the paper surface).
-	const CHART_COLORS = ['#a8261c', '#0f6fae', '#a07414'];
 	const trend = $derived.by(() => {
 		const runsAsc = [...data.history.runs]
 			.reverse()
@@ -407,6 +406,10 @@
 	.matrix .model-col {
 		font-weight: 500;
 		color: var(--color-ink);
+		position: sticky;
+		left: 0;
+		background: var(--color-paper);
+		z-index: 1;
 	}
 
 	.matrix td.flipped {

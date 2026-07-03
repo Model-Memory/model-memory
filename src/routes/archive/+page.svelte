@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Colophon from '$lib/Colophon.svelte';
 	import Masthead from '$lib/Masthead.svelte';
+	import Sparkline from '$lib/Sparkline.svelte';
 	import { stampDateTime } from '$lib/format';
 	import { resolve } from '$app/paths';
 
@@ -39,9 +40,31 @@
 						<a class="clear" href={resolve('/archive')}>clear</a>
 					{/if}
 				</form>
+				{#if data.search && (data.productHits.length > 0 || data.categoryHits.length > 0)}
+					<p class="hits">
+						{#if data.productHits.length > 0}
+							<span class="hits-label">products:</span>
+							{#each data.productHits as hit (hit.key)}
+								<a class="tag" href={resolve('/products/[slug]', { slug: hit.key })}>
+									{hit.name} ({hit.count})
+								</a>
+							{/each}
+						{/if}
+						{#if data.categoryHits.length > 0}
+							<span class="hits-label">categories:</span>
+							{#each data.categoryHits as c (c)}
+								<a class="tag" href={resolve('/category/[name]', { name: c })}>{c}</a>
+							{/each}
+						{/if}
+					</p>
+				{/if}
 				{#if data.questions.length === 0}
 					{#if data.search}
-						<p class="notice">Nothing matches that search.</p>
+						<p class="notice">
+							{data.productHits.length > 0 || data.categoryHits.length > 0
+								? 'No tracked questions match — but the hits above do.'
+								: 'Nothing matches that search.'}
+						</p>
 					{:else}
 						<p class="notice">
 							No questions tracked yet.
@@ -57,6 +80,12 @@
 									>{q.text}</a
 								>
 								<span class="q-meta">
+									{#if data.sparks[q.id]}
+										<Sparkline
+											points={data.sparks[q.id]}
+											label={`Consensus share trend for ${q.text}`}
+										/>
+									{/if}
 									{#if q.category}
 										<span class="tag">{q.category}</span>
 									{/if}
@@ -193,6 +222,31 @@ POST /api/commission
 	}
 
 	.search .clear:hover {
+		color: var(--color-stamp);
+	}
+
+	.hits {
+		display: flex;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 0.5rem 0.6rem;
+		margin: 0 0 1.25rem;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.hits-label {
+		color: var(--color-mark);
+	}
+
+	.hits a.tag {
+		text-decoration: none;
+	}
+
+	.hits a.tag:hover {
+		border-color: var(--color-stamp);
 		color: var(--color-stamp);
 	}
 

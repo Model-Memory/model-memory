@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Colophon from '$lib/Colophon.svelte';
 	import Masthead from '$lib/Masthead.svelte';
+	import TrendChart from '$lib/TrendChart.svelte';
 	import { stampDate } from '$lib/format';
 	import { resolve } from '$app/paths';
 
@@ -45,6 +46,15 @@
 				{/each}
 			</ul>
 		</section>
+
+		{#if data.trend}
+			<hr class="rule" />
+
+			<section>
+				<h2 class="section-title">Share over time</h2>
+				<TrendChart dates={data.trend.dates} series={data.trend.series} />
+			</section>
+		{/if}
 
 		<hr class="rule" />
 

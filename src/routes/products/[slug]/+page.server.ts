@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { gateway } from '$lib/server/gateway';
 import { productKey, tallyProducts } from '$lib/products';
+import { productTrend } from '$lib/server/trend-data';
 
 // One product's footprint across the archive. The slug is the canonical
 // productKey (SvelteKit delivers it decoded).
@@ -47,6 +48,7 @@ export const load: PageServerLoad = async ({ params, platform }) => {
 	return {
 		name,
 		key,
+		trend: productTrend(picks, key),
 		mentions: mine.length,
 		questions,
 		categories,

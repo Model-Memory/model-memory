@@ -2,6 +2,10 @@
 // returns free-form names ("Vercel", "vercel.com", "Vercel's platform");
 // these must count as one product when tallying.
 
+// Chart series palette: entity-fixed assignment, validated (lightness band,
+// chroma floor, CVD separation, contrast) against the paper surface #f4ecd8.
+export const CHART_COLORS = ['#a8261c', '#0f6fae', '#a07414'];
+
 // Human-readable model name: Workers AI ids carry a '@cf/<org>/' prefix that
 // is noise in the UI; provider-prefixed unified-billing ids stay as-is.
 export function displayModel(modelId: string): string {

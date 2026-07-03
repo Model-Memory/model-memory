@@ -30,6 +30,19 @@
 		<hr class="rule" />
 
 		<section>
+			{#if data.categories.length > 1}
+				<p class="chips">
+					<a class="tag" class:on={data.category === ''} href={resolve('/shifts')}>all</a>
+					{#each data.categories as c (c)}
+						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve()-based path plus a query string -->
+						<a
+							class="tag"
+							class:on={data.category === c}
+							href={`${resolve('/shifts')}?category=${encodeURIComponent(c)}`}>{c}</a
+						>
+					{/each}
+				</p>
+			{/if}
 			{#if !data.available}
 				<p class="notice">The ledger is warming up — the gateway is not reachable yet.</p>
 			{:else if data.shifts.length === 0}
@@ -101,6 +114,30 @@
 		border: 0;
 		border-top: 1px solid var(--color-rule);
 		margin: clamp(2rem, 5vw, 3.5rem) 0;
+	}
+
+	.chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin: 0 0 1.5rem;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.chips .tag {
+		border: 1px solid var(--color-rule);
+		padding: 0.1rem 0.4rem;
+		color: var(--color-mark);
+		text-decoration: none;
+	}
+
+	.chips .tag:hover,
+	.chips .tag.on {
+		border-color: var(--color-stamp);
+		color: var(--color-stamp);
 	}
 
 	.ledger {

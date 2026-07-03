@@ -41,9 +41,9 @@
 	const consensusTop = $derived(tallyProducts(entry.specimens.map((s) => s.answer))[0]);
 
 	const fallbackInsights = [
-		{ stat: '87%', label: 'of hosting queries name Vercel' },
-		{ stat: '73%', label: 'of database queries name Supabase' },
-		{ stat: '94%', label: 'of router queries name OpenRouter' }
+		{ stat: '87%', label: 'of hosting queries name Vercel', category: null as string | null },
+		{ stat: '73%', label: 'of database queries name Supabase', category: null as string | null },
+		{ stat: '94%', label: 'of router queries name OpenRouter', category: null as string | null }
 	];
 
 	// Real insights once categorized questions have enough archived picks;
@@ -65,7 +65,8 @@
 			.slice(0, 3)
 			.map((c) => ({
 				stat: `${Math.round((c.top.count / c.total) * 100)}%`,
-				label: `of ${c.category} queries name ${c.top.name}`
+				label: `of ${c.category} queries name ${c.top.name}`,
+				category: c.category as string | null
 			}));
 		return real.length > 0 ? real : fallbackInsights;
 	});
@@ -167,11 +168,18 @@
 			</p>
 
 			<div class="stats">
-				{#each insights as { stat, label } (stat + label)}
-					<div class="stat">
-						<div class="big">{stat}</div>
-						<div class="tag">{label}</div>
-					</div>
+				{#each insights as { stat, label, category } (stat + label)}
+					{#if category}
+						<a class="stat linked" href={resolve('/category/[name]', { name: category })}>
+							<div class="big">{stat}</div>
+							<div class="tag">{label}</div>
+						</a>
+					{:else}
+						<div class="stat">
+							<div class="big">{stat}</div>
+							<div class="tag">{label}</div>
+						</div>
+					{/if}
 				{/each}
 			</div>
 		</section>
@@ -485,6 +493,15 @@
 		margin-top: clamp(2rem, 4vw, 3rem);
 		padding-top: 1.5rem;
 		border-top: 1px solid var(--color-rule);
+	}
+
+	a.stat.linked {
+		text-decoration: none;
+		color: inherit;
+	}
+
+	a.stat.linked:hover .big {
+		color: var(--color-ink);
 	}
 
 	.stat .big {
