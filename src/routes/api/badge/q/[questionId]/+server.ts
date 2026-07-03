@@ -1,33 +1,35 @@
 import type { RequestHandler } from './$types';
 import { gateway } from '$lib/server/gateway';
 import { tallyProducts } from '$lib/products';
+import { withEdgeCache } from '$lib/server/cache';
 
 // Embeddable SVG badge: the latest consensus for a tracked question.
 // e.g. <img src="https://.../api/badge/q/<id>" alt="Model Memory consensus">
-export const GET: RequestHandler = async ({ params, platform }) => {
-	const gw = gateway(platform);
-	if (!gw) return new Response('gateway unavailable', { status: 503 });
+export const GET: RequestHandler = ({ params, platform, url }) =>
+	withEdgeCache(platform, url, async () => {
+		const gw = gateway(platform);
+		if (!gw) return new Response('gateway unavailable', { status: 503 });
 
-	try {
-		const history = await gw.getQuestionHistory(params.questionId, 5);
-		const latest = history.runs.find((r) => r.picks.some((p) => p.recommended_product));
-		const tally = latest ? tallyProducts(latest.picks.map((p) => p.recommended_product)) : [];
-		const top = tally[0];
-		const named = latest?.picks.filter((p) => p.recommended_product).length ?? 0;
+		try {
+			const history = await gw.getQuestionHistory(params.questionId, 5);
+			const latest = history.runs.find((r) => r.picks.some((p) => p.recommended_product));
+			const tally = latest ? tallyProducts(latest.picks.map((p) => p.recommended_product)) : [];
+			const top = tally[0];
+			const named = latest?.picks.filter((p) => p.recommended_product).length ?? 0;
 
-		const label = 'models say';
-		const value = top ? `${top.count}/${named} ${top.name}` : 'no consensus yet';
-		const svg = badge(label, value);
-		return new Response(svg, {
-			headers: {
-				'content-type': 'image/svg+xml',
-				'cache-control': 'public, max-age=300'
-			}
-		});
-	} catch {
-		return new Response('question not found', { status: 404 });
-	}
-};
+			const label = 'models say';
+			const value = top ? `${top.count}/${named} ${top.name}` : 'no consensus yet';
+			const svg = badge(label, value);
+			return new Response(svg, {
+				headers: {
+					'content-type': 'image/svg+xml',
+					'cache-control': 'public, max-age=300'
+				}
+			});
+		} catch {
+			return new Response('question not found', { status: 404 });
+		}
+	});
 
 function escapeXml(s: string): string {
 	return s
